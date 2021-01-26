@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/stshontikidis/image_check/docker"
+	"github.com/stshontikidis/image_check/github"
 	"github.com/stshontikidis/image_check/util"
 )
 
@@ -17,8 +18,7 @@ func check(e error) {
 
 func main() {
 	cfg := util.GetConfig()
-	repo := cfg.Repo
-	fmt.Println(repo)
+
 	file, err := os.OpenFile("/tmp/digest", os.O_CREATE|os.O_RDWR, 0664)
 	util.CheckErr(err)
 
@@ -27,11 +27,14 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 
-	newDigest := docker.GetDigest(repo, "stable")
+	newDigest := docker.GetDigest(cfg.DockerRepo, "stable")
 	oldDigest := scanner.Text()
 
 	if oldDigest != newDigest {
 		fmt.Println("no match!!")
+		err := github.Dispatch(cfg.GithubRepo, cfg.GithubToken)
+		util.CheckErr(err)
+
 		util.WipeAndWrite(file, newDigest)
 	}
 

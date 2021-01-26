@@ -48,6 +48,8 @@ func GetDigest(repo string, tag string) string {
 	resp, err := client.Do(req)
 	util.CheckErr(err)
 
+	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	util.CheckErr(err)
 
