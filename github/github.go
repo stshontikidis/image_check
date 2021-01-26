@@ -3,7 +3,6 @@ package github
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -30,20 +29,9 @@ func Dispatch(repo string, token string) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 422 {
-		fmt.Println("422")
+	if resp.StatusCode != 204 {
 		body, err := ioutil.ReadAll(resp.Body)
 		util.CheckErr(err)
-
-		return errors.New(string(body))
-
-	} else if resp.StatusCode == 204 {
-		fmt.Println("Success!")
-	} else {
-		fmt.Println("Unknown err")
-		body, err := ioutil.ReadAll(resp.Body)
-		util.CheckErr(err)
-
 		return errors.New(string(body))
 	}
 
