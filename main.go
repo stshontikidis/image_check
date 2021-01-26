@@ -16,8 +16,9 @@ func check(e error) {
 }
 
 func main() {
-	repo := "library/nextcloud"
-
+	cfg := util.GetConfig()
+	repo := cfg.Repo
+	fmt.Println(repo)
 	file, err := os.OpenFile("/tmp/digest", os.O_CREATE|os.O_RDWR, 0664)
 	util.CheckErr(err)
 
