@@ -4,15 +4,28 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/stshontikidis/image_check/docker"
 	"github.com/stshontikidis/image_check/github"
 	"github.com/stshontikidis/image_check/util"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+func loop(digest *string, file *os.File, cfg *util.Config) {
+	newDigest := docker.GetDigest(cfg.DockerRepo, "stable")
+
+	if *digest != newDigest {
+		fmt.Println("no match!!")
+		err := github.Dispatch(cfg.GithubRepo,
+			cfg.GithubRef,
+			cfg.GithubWorkflowID,
+			cfg.GithubToken,
+			newDigest,
+		)
+		util.CheckErr(err)
+
+		util.WipeAndWrite(file, newDigest)
+		*digest = newDigest
 	}
 }
 
@@ -27,15 +40,10 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 
-	newDigest := docker.GetDigest(cfg.DockerRepo, "stable")
-	oldDigest := scanner.Text()
-
-	if oldDigest != newDigest {
-		fmt.Println("no match!!")
-		err := github.Dispatch(cfg.GithubRepo, cfg.GithubToken)
-		util.CheckErr(err)
-
-		util.WipeAndWrite(file, newDigest)
+	digest := scanner.Text()
+	for {
+		fmt.Println("looping")
+		loop(&digest, file, cfg)
+		time.Sleep(time.Hour)
 	}
-
 }

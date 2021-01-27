@@ -2,6 +2,7 @@ package github
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -9,18 +10,35 @@ import (
 	"github.com/stshontikidis/image_check/util"
 )
 
-// Dispatch will execute a repository_dispatch event against github repo
-func Dispatch(repo string, token string) error {
-	acceptType := "application/vnd.github.v3+json"
-	url := "https://api.github.com/repos/" + repo + "/dispatches"
+type input struct {
+	Digest string `json:"digest"`
+}
 
-	body := []byte(`{"event_type": "base_update"}`)
+type payload struct {
+	Ref    string `json:"ref"`
+	Inputs input  `json:"inputs"`
+}
+
+// Dispatch will execute a repository_dispatch event against github repo
+func Dispatch(repo string, ref string, workflowID string, token string, digest string) error {
+	path := "repos/" + repo + "/actions/workflows/" + workflowID + "/dispatches"
+	url := "https://api.github.com/" + path
+
+	body, err := json.Marshal(
+		payload{Ref: ref,
+			Inputs: input{
+				Digest: digest,
+			},
+		})
+
+	util.CheckErr(err)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	util.CheckErr(err)
 
-	req.Header.Set("Accept", acceptType)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 

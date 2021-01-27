@@ -6,21 +6,28 @@ import (
 
 // Config general config structure
 type Config struct {
-	GithubRepo  string
-	GithubToken string
-	DockerRepo  string
+	GithubRef        string
+	GithubRepo       string
+	GithubToken      string
+	GithubWorkflowID string
+	DockerRepo       string
 }
 
 // GetConfig returns pointer to config
 func GetConfig() *Config {
+	githubRef := os.Getenv("GH_REF")
 	githubRepo := os.Getenv("GH_REPO")
 	token := os.Getenv("GH_TOKEN")
 	dockerRepo := os.Getenv("DOCKER_REPO")
 
+	workflowID := os.Getenv("GH_WORKFLOW")
+
 	cfg := &Config{
-		GithubRepo:  githubRepo,
-		GithubToken: token,
-		DockerRepo:  dockerRepo,
+		GithubRef:        githubRef,
+		GithubRepo:       githubRepo,
+		GithubToken:      token,
+		GithubWorkflowID: workflowID,
+		DockerRepo:       dockerRepo,
 	}
 
 	return cfg
