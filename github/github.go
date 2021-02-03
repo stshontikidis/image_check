@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
+	"net"
 	"net/http"
-
-	"github.com/stshontikidis/image_check/util"
+	"time"
 )
 
 type input struct {
@@ -31,25 +33,36 @@ func Dispatch(repo string, ref string, workflowID string, token string, digest s
 			},
 		})
 
-	util.CheckErr(err)
+	if err != nil {
+		return fmt.Errorf("Unable to format POST body")
+	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-	util.CheckErr(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
 
 	resp, err := client.Do(req)
-	util.CheckErr(err)
+	if err != nil {
+		err, ok := err.(net.Error)
+		if ok && err.Timeout() {
+			return fmt.Errorf("POST request timed out %s", url)
+		}
+		log.Fatal(err)
+	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		body, err := ioutil.ReadAll(resp.Body)
-		util.CheckErr(err)
+		body, _ := ioutil.ReadAll(resp.Body)
 		return errors.New(string(body))
 	}
 
