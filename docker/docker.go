@@ -55,7 +55,7 @@ func GetDigest(repo string, tag string) (string, error) {
 		return "", err
 	}
 
-	url := "https://registry.hub.docker.com/v2/" + repo + "/manifests/stable"
+	url := "https://registry.hub.docker.com/v2/" + repo + "/manifests/" + tag
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
