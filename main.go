@@ -34,7 +34,7 @@ func main() {
 }
 
 func loop(digest *string, file *os.File, cfg *config.Config) {
-	newDigest, err := docker.GetDigest(cfg.DockerRepo, "stable")
+	newDigest, err := docker.GetDigest(cfg.DockerRepo, cfg.DockerTag)
 	if err != nil {
 		log.Fatal(err)
 	}

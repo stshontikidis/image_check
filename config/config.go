@@ -11,6 +11,7 @@ type Config struct {
 	GithubToken      string
 	GithubWorkflowID string
 	DockerRepo       string
+	DockerTag        string
 }
 
 // GetConfig returns pointer to config
@@ -19,6 +20,7 @@ func GetConfig() *Config {
 	githubRepo := os.Getenv("GH_REPO")
 	token := os.Getenv("GH_TOKEN")
 	dockerRepo := os.Getenv("DOCKER_REPO")
+	dockerTag := os.Getenv("DOCKER_TAG")
 
 	workflowID := os.Getenv("GH_WORKFLOW")
 
@@ -28,6 +30,7 @@ func GetConfig() *Config {
 		GithubToken:      token,
 		GithubWorkflowID: workflowID,
 		DockerRepo:       dockerRepo,
+		DockerTag:        dockerTag,
 	}
 
 	return cfg
